@@ -1,5 +1,5 @@
 node {
-    def mvnHome = tool 'maven-3.5.2'  // Utilisez la version de Maven que vous avez définie dans Jenkins
+    def mvnHome = tool 'maven 3.5.2'  // Utilisez la version de Maven que vous avez définie dans Jenkins
     def dockerImageTag = "spring-app:${env.BUILD_NUMBER}"  
 
     stage('Clone Repo') {
