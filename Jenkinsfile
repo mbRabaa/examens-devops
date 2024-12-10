@@ -1,5 +1,5 @@
 node {
-    def mvnHome = tool 'maven-3.5.2'
+    def mvnHome = tool 'maven 3.5.2'
     def dockerImageTag = "mbrabaa2023/spring-app:${env.BUILD_NUMBER}"
 
     stage('Clone Repo') {
