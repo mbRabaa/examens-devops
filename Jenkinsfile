@@ -7,8 +7,10 @@ node {
     }
 
     stage('Build Project') {
-        // Exécute Maven dans le répertoire racine du projet
-        sh "mvn clean package"
+        // Se déplacer dans le répertoire contenant le pom.xml
+        dir('springboot') {
+            sh "mvn clean package"
+        }
     }
 
     stage('Login to DockerHub') {
