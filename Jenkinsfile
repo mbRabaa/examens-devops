@@ -1,49 +1,30 @@
-pipeline {
-    agent any
+node {
+    def mvnHome = tool 'maven-3.5.2'  // Utilisez la version de Maven que vous avez définie dans Jenkins
+    def dockerImageTag = "spring-app:${env.BUILD_NUMBER}"  
 
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-        
-        stage('Construire le projet') {
-            steps {
-                script {
-                    // Définir le répertoire de travail correct
-                    dir('/home/rabaa/springboot') {  // Remplacer par le chemin de votre projet
-                        // S'assurer que le fichier mvnw est exécutable
-                        sh 'chmod +x mvnw'
-                        // Utiliser le wrapper Maven pour construire le projet
-                        sh './mvnw clean package'  // Cette commande construit le projet sans ignorer les tests
-                    }
-                }
-            }
-        }
+    stage('Clone Repo') {
+        git branch: 'main', url: 'https://github.com/mbRabaa/examens-devops.git'
+    }
 
-        stage('Construire l\'image Docker') {
-            steps {
-                script {
-                    // Construire l'image Docker ici (si nécessaire)
-                    sh 'docker build -t springboot-app .'
-                }
-            }
-        }
+    stage('Build Project') {
+        sh "mvn clean package"  
+    }
 
-        stage('Pousser l\'image Docker sur Docker Hub') {
-            steps {
-                script {
-                    // Pousser l'image Docker sur Docker Hub (si nécessaire)
-                    sh 'docker push springboot-app'
-                }
-            }
+    stage('Build Docker Image') {
+        echo "Building Docker image with tag ${dockerImageTag}"
+        // Construire l'image Docker avec le nom 'spring-app' et le tag basé sur le numéro de build
+        sh "docker build -t ${dockerImageTag} ."
+    }
+
+    stage('Login to DockerHub') {
+        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+            sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
         }
     }
-    
-    post {
-        always {
-            cleanWs()  // Nettoyer le workspace après l'exécution
-        }
+
+    stage('Push Docker Image to DockerHub') {
+        echo "Pushing Docker image to DockerHub with tag ${dockerImageTag}"
+        // Pousser l'image Docker sur Docker Hub
+        sh "docker push ${dockerImageTag}"
     }
 }
