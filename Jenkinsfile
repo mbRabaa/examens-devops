@@ -1,30 +1,23 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = "mbrabaa2023/newspring"
-        DOCKERHUB_CREDENTIALS = 'DockerHub'
-        GITHUB_CREDENTIALS = 'github-credentials'
-    }
-
     stages {
-        stage('Cloner le code') {
+        stage('Checkout') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: GITHUB_CREDENTIALS, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                        // Configurer un buffer plus grand pour Git
-                        sh 'git config --global http.postBuffer 1048576000'  // 1 Go
-                        sh 'git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/mbRabaa/examens-devops.git'
-                    }
-                }
+                checkout scm
             }
         }
-
+        
         stage('Construire le projet') {
             steps {
                 script {
-                    // Utiliser le wrapper Maven
-                    sh './mvnw clean package'  // Utiliser le Maven Wrapper ici
+                    // Définir le répertoire de travail correct
+                    dir('/home/rabaa/springboot') {  // Remplacer par le chemin de votre projet
+                        // S'assurer que le fichier mvnw est exécutable
+                        sh 'chmod +x mvnw'
+                        // Utiliser le wrapper Maven pour construire le projet
+                        sh './mvnw clean package'  // Cette commande construit le projet sans ignorer les tests
+                    }
                 }
             }
         }
@@ -32,8 +25,8 @@ pipeline {
         stage('Construire l\'image Docker') {
             steps {
                 script {
-                    sh 'docker build -t $DOCKER_IMAGE .'
-                    sh 'docker images'
+                    // Construire l'image Docker ici (si nécessaire)
+                    sh 'docker build -t springboot-app .'
                 }
             }
         }
@@ -41,21 +34,16 @@ pipeline {
         stage('Pousser l\'image Docker sur Docker Hub') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS, passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-                        sh 'docker push $DOCKER_IMAGE'
-                    }
+                    // Pousser l'image Docker sur Docker Hub (si nécessaire)
+                    sh 'docker push springboot-app'
                 }
             }
         }
     }
-
+    
     post {
         always {
-            cleanWs()
+            cleanWs()  // Nettoyer le workspace après l'exécution
         }
     }
 }
-
-
-
