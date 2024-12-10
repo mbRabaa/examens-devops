@@ -8,7 +8,7 @@ node {
 
     stage('Build Project') {
         // Accéder au répertoire contenant pom.xml et exécuter Maven
-        dir('/home/rabaa/springboot/poml.xml') {
+        dir('/home/rabaa/springboot/') {
             sh "mvn clean package"
         }
     }
