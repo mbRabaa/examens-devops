@@ -3,22 +3,28 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "mbrabaa2023/newspring"  // Nom de l'image Docker
-        DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'  // Credentials Docker Hub enregistrés dans Jenkins
+        DOCKERHUB_CREDENTIALS = 'DockerHub'  // Credentials Docker Hub enregistrés dans Jenkins
         GITHUB_CREDENTIALS = 'github-credentials'  // Credentials GitHub enregistrés dans Jenkins
     }
 
     stages {
         stage('Cloner le code') {
             steps {
-                // Cloner le code depuis GitHub en utilisant les credentials GitHub
-                git credentialsId: GITHUB_CREDENTIALS, url: 'https://github.com/mbRabaa/examens-devops.git'
+                script {
+                    // Utiliser les credentials pour accéder au dépôt GitHub via HTTPS
+                    withCredentials([usernamePassword(credentialsId: GITHUB_CREDENTIALS, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        // Cloner le code en utilisant les identifiants GitHub
+                        sh 'git config --global credential.helper store'
+                        sh "git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/mbRabaa/examens-devops.git"
+                    }
+                }
             }
         }
 
         stage('Construire le projet') {
             steps {
-                // Construire l'application Spring Boot avec Maven
                 script {
+                    // Construire l'application Spring Boot avec Maven
                     sh './mvnw clean package -DskipTests'  // Utilise Maven Wrapper ou Maven si installé
                 }
             }
@@ -56,4 +62,5 @@ pipeline {
         }
     }
 }
+
 
