@@ -1,20 +1,31 @@
 pipeline {
     agent any
-    environment {
-        GITHUB_CREDENTIALS = credentials('github-credentials')  // Remplace 'github-credentials' par l'ID de tes credentials GitHub
-        DOCKER_HUB_CREDENTIALS = credentials('DockerHub')  // Remplace 'DockerHub' par l'ID de tes credentials Docker Hub
-    }
     stages {
         stage('Checkout') {
             steps {
-                // Checkout du code depuis GitHub avec les credentials et spécification de la branche
-                git credentialsId: 'github-credentials', url: 'https://github.com/mbRabaa/examens-devops.git', branch: 'main'
+                checkout scm
+            }
+        }
+        stage('Build Maven Project') {
+            steps {
+                script {
+                    // Exécuter Maven pour construire le JAR
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+        stage('Verify JAR') {
+            steps {
+                script {
+                    // Vérifier que le fichier JAR est bien dans le répertoire target
+                    sh 'ls -l target/'
+                }
             }
         }
         stage('Build & Docker Image') {
             steps {
                 script {
-                    // Construire l'image Docker avec le nom spécifié
+                    // Construire l'image Docker
                     sh 'docker build -t mbrabaa2023/spring-img .'
                 }
             }
@@ -22,10 +33,8 @@ pipeline {
         stage('Login to Docker Hub') {
             steps {
                 script {
-                    // Connexion à Docker Hub avec les credentials
-                    withDockerRegistry([credentialsId: 'DockerHub', url: 'https://index.docker.io/v1/']) {
-                        echo "Connexion à Docker Hub réussie"
-                    }
+                    // Se connecter à Docker Hub
+                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                 }
             }
         }
@@ -33,14 +42,11 @@ pipeline {
             steps {
                 script {
                     // Pousser l'image Docker vers Docker Hub
-                    withDockerRegistry([credentialsId: 'DockerHub', url: 'https://index.docker.io/v1/']) {
-                        sh 'docker push mbrabaa2023/spring-img'
-                    }
+                    sh 'docker push mbrabaa2023/spring-img'
                 }
             }
         }
     }
 }
-
 
 modification de jenkinsfile
