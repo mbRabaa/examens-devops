@@ -7,8 +7,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Checkout du code depuis GitHub avec les credentials
-                git credentialsId: 'github-credentials', url: 'https://github.com/mbRabaa/examens-devops.git'
+                // Checkout du code depuis GitHub avec les credentials et spécification de la branche
+                git credentialsId: 'github-credentials', url: 'https://github.com/mbRabaa/examens-devops.git', branch: 'main'
             }
         }
         stage('Build & Docker Image') {
@@ -41,5 +41,6 @@ pipeline {
         }
     }
 }
+
 
 modification de jenkinsfile
