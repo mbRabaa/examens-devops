@@ -1,31 +1,45 @@
-node {
-    def mvnHome = tool 'maven 3.5.2'
-    def dockerImageTag = "mbrabaa2023/spring-app:${env.BUILD_NUMBER}"
-
-    stage('Clone Repo') {
-        git branch: 'main', url: 'https://github.com/mbRabaa/examens-devops.git'
+pipeline {
+    agent any
+    environment {
+        GITHUB_CREDENTIALS = credentials('github-credentials')  // Remplace 'github-credentials' par l'ID de tes credentials GitHub
+        DOCKER_HUB_CREDENTIALS = credentials('DockerHub')  // Remplace 'DockerHub' par l'ID de tes credentials Docker Hub
     }
-
-    stage('Build Project') {
-        // Accéder au répertoire contenant pom.xml et exécuter Maven
-        dir('/home/rabaa/springboot/') {
-            sh "mvn clean package"
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout du code depuis GitHub avec les credentials
+                git credentialsId: 'github-credentials', url: 'https://github.com/mbRabaa/examens-devops.git'
+            }
         }
-    }
-
-    stage('Login to DockerHub') {
-        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-            sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+        stage('Build & Docker Image') {
+            steps {
+                script {
+                    // Construire l'image Docker avec le nom spécifié
+                    sh 'docker build -t mbrabaa2023/spring-img .'
+                }
+            }
         }
-    }
-
-    stage('Build Docker Image') {
-        sh "docker build -t ${dockerImageTag} /home/rabaa/springboot"
-    }
-
-    stage('Push Docker Image to DockerHub') {
-        echo "Pushing Docker image to DockerHub"
-        sh "docker push ${dockerImageTag}"
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    // Connexion à Docker Hub avec les credentials
+                    withDockerRegistry([credentialsId: 'DockerHub', url: 'https://index.docker.io/v1/']) {
+                        echo "Connexion à Docker Hub réussie"
+                    }
+                }
+            }
+        }
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    // Pousser l'image Docker vers Docker Hub
+                    withDockerRegistry([credentialsId: 'DockerHub', url: 'https://index.docker.io/v1/']) {
+                        sh 'docker push mbrabaa2023/spring-img'
+                    }
+                }
+            }
+        }
     }
 }
 
+modification de jenkinsfile
