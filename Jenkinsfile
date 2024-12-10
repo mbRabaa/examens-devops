@@ -8,16 +8,23 @@ pipeline {
     }
 
     stages {
-        stage('Préparer l\'environnement') {
+        stage('Cloner le code') {
             steps {
-                echo 'Le code a déjà été cloné automatiquement par Jenkins.'
+                script {
+                    withCredentials([usernamePassword(credentialsId: GITHUB_CREDENTIALS, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        // Configurer un buffer plus grand pour Git
+                        sh 'git config --global http.postBuffer 1048576000'  // 1 Go
+                        sh 'git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/mbRabaa/examens-devops.git'
+                    }
+                }
             }
         }
 
         stage('Construire le projet') {
             steps {
                 script {
-                    sh './mvnw clean package -DskipTests'
+                    // Utiliser le wrapper Maven
+                    sh './mvnw clean package'  // Utiliser le Maven Wrapper ici
                 }
             }
         }
@@ -35,7 +42,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS, passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
                         sh 'docker push $DOCKER_IMAGE'
                     }
                 }
@@ -45,18 +52,10 @@ pipeline {
 
     post {
         always {
-            echo 'Nettoyage du workspace...'
             cleanWs()
-        }
-        success {
-            echo 'Pipeline terminé avec succès.'
-        }
-        failure {
-            echo 'Pipeline échoué. Veuillez vérifier les logs pour plus de détails.'
         }
     }
 }
-
 
 
 
