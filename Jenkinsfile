@@ -7,8 +7,8 @@ node {
     }
 
     stage('Build Project') {
-        // Se déplacer dans le répertoire contenant le pom.xml
-        dir('springboot') {
+        // Accéder au répertoire contenant pom.xml et exécuter Maven
+        dir('/home/rabaa/springboot') {
             sh "mvn clean package"
         }
     }
@@ -20,7 +20,7 @@ node {
     }
 
     stage('Build Docker Image') {
-        sh "docker build -t ${dockerImageTag} ."
+        sh "docker build -t ${dockerImageTag} /home/rabaa/springboot"
     }
 
     stage('Push Docker Image to DockerHub') {
@@ -28,3 +28,4 @@ node {
         sh "docker push ${dockerImageTag}"
     }
 }
+
