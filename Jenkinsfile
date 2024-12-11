@@ -7,21 +7,17 @@ node {
     }
 
    // stage('Build Project') {
-     //   sh "${mvnHome}/bin/mvn clean package"
+       // sh "mvn clean package"
    // }
 
-    stage('Build Docker Image') {
-        sh "docker build -t ${dockerImageTag} ."
-    }
-
-    stage('Validate Docker Image') {
-        sh "docker images | grep ${dockerImageTag}"
-    }
+   stage('Build Docker Image') {
+       sh "docker build -t mbrabaa2023/spring-image:v1.0 ."
+   }
 
     stage('Push Docker Image to DockerHub') {
         withCredentials([usernamePassword(credentialsId: 'DockerHub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
             sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
-            sh "docker push ${dockerImageTag}"
+            sh "docker push mbrabaa2023/spring-image:v1.0"
         }
     }
 }
