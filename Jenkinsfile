@@ -11,13 +11,13 @@ node {
    // }
 
    stage('Build Docker Image') {
-       sh "docker build -t mbrabaa2023/spring-image:01 ."
+       sh "docker build -t mbrabaa2023/spring-image:v1.0 ."
    }
 
     stage('Push Docker Image to DockerHub') {
         withCredentials([usernamePassword(credentialsId: 'DockerHub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
             sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
-            sh "docker push mbrabaa2023/spring-image:01"
+            sh "docker push mbrabaa2023/spring-image:v1.0"
         }
     }
 }
