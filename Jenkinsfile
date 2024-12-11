@@ -10,9 +10,9 @@ node {
        // sh "mvn clean package"
    // }
 
-   stage('Build Docker Image') {
-       sh "docker build -t mbrabaa2023/spring-image:v1.0 ."
-   }
+  // stage('Build Docker Image') {
+     //  sh "docker build -t mbrabaa2023/spring-image:v1.0 ."
+  // }
 
     stage('Push Docker Image to DockerHub') {
         withCredentials([usernamePassword(credentialsId: 'DockerHub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
