@@ -6,9 +6,9 @@ node {
         git branch: 'main', url: 'https://github.com/mbRabaa/examens-devops.git'
     }
 
-    stage('Build Project') {
-        sh "${mvnHome}/bin/mvn clean package"
-    }
+   // stage('Build Project') {
+     //   sh "${mvnHome}/bin/mvn clean package"
+   // }
 
     stage('Build Docker Image') {
         sh "docker build -t ${dockerImageTag} ."
