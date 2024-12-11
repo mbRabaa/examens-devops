@@ -7,28 +7,20 @@ node {
     }
 
     stage('Build Project') {
-        dir('springboot') { // Accéder au dossier springboot
-            sh "mvn clean package"
-        }
+        sh "mvn clean package"
     }
 
     stage('Build Docker Image') {
-        dir('springboot') { // Accéder au dossier springboot
-            sh "docker build -t ${dockerImageTag} ."
-        }
+        sh "docker build -t ${dockerImageTag} ."
     }
 
     stage('Push Docker Image to DockerHub') {
         withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
             sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
-            dir('springboot') { // Accéder au dossier springboot
-                sh "docker push ${dockerImageTag}"
-            }
+            sh "docker push ${dockerImageTag}"
         }
     }
 }
-
-
 
         
 
